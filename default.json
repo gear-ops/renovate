@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "Shared preset of the teams' repositories, run from gear-ops/IaC's renovate.yaml: non-major updates come as one PR on Monday 00:00-07:59 UTC, a major waits for its checkbox in the Dependency Dashboard, and a fix for a vulnerability GitHub or OSV reports gets its own PR labelled security at once.",
+    "A new digest of a Dockerfile's base image merges itself once the branch's required checks pass, so the image is rebuilt on a fresh base every week."
+  ],
+  "extends": [
+    "config:recommended",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigestsToSemver",
+    "group:allNonMajor"
+  ],
+  "schedule": ["* 0-7 * * 1"],
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "addLabels": ["security"]
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["* 0-7 * * 1"]
+  },
+  "packageRules": [
+    {
+      "description": "An npm release waits a week: a hijacked or broken release is usually pulled within days",
+      "matchDatasources": ["npm"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Majors wait for their checkbox in the Dependency Dashboard",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "A base image's new digest under the same tag changes no version: one PR per repository, merged by GitHub auto-merge once the required build check is green",
+      "matchManagers": ["dockerfile"],
+      "matchUpdateTypes": ["digest"],
+      "groupName": "base image digests",
+      "automerge": true,
+      "platformAutomerge": true
+    }
+  ]
+}
