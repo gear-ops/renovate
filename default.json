@@ -2,7 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": [
     "Shared preset of the teams' repositories, run from gear-ops/IaC's renovate.yaml: non-major updates come as one PR on Monday 00:00-07:59 UTC, a major waits for its checkbox in the Dependency Dashboard, and a fix for a vulnerability GitHub or OSV reports gets its own PR labelled security at once.",
-    "A new digest of a Dockerfile's base image merges itself once the branch's required checks pass, so the image is rebuilt on a fresh base every week."
+    "A new digest of a Dockerfile's base image merges itself without waiting for checks, since the teams' repositories run none on a pull request: build-deploy builds and scans the merged commit before it deploys, so a base that breaks the build stops there, and the image is rebuilt on a fresh base every week."
   ],
   "extends": [
     "config:recommended",
@@ -31,12 +31,13 @@
       "dependencyDashboardApproval": true
     },
     {
-      "description": "A base image's new digest under the same tag changes no version: one PR per repository, merged by GitHub auto-merge once the required build check is green",
+      "description": "A base image's new digest under the same tag changes no version: one PR per repository, merged by Renovate itself with no check to wait for; the build after the merge stops a broken one before deploy",
       "matchManagers": ["dockerfile"],
       "matchUpdateTypes": ["digest"],
       "groupName": "base image digests",
       "automerge": true,
-      "platformAutomerge": true
+      "platformAutomerge": false,
+      "ignoreTests": true
     }
   ]
 }
